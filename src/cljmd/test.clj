@@ -12,7 +12,7 @@
 (defn -main
   []
   (do
-    (core/build-markup test-section)
+    (println (core/build-markup test-section))
     ; (core/build-section test-section "blockquote")
     ; (println (core/build-markup test-section))
     ;(core/section test-section)
