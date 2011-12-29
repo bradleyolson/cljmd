@@ -13,15 +13,16 @@
   (if (not-empty content) 
     (str "<" tag ">" content "</" tag ">")))
 
+(defn remove-md
+  [text pattern]
+  (clojure.string/replace text pattern ""))
+
 (defn build-section
   [lines tag]
   (let [tag-str tag
         tag-key (jmx/maybe-keywordize tag-str)]
     (if (re-matcher (sectional-opts tag-key) (first lines))
-        (if (not-empty (rest lines)) (conj (build-section (rest lines) tag-str) (first lines)))   
-      ))
-  ;(build-tag tag (first lines) (recur rest lines))
-  )
+        (if (not-empty (rest lines)) (conj (build-section (rest lines) tag-str) (remove-md (first lines) (sectional-opts tag-key)))))))
 
 (defn section 
   [lines]
@@ -39,7 +40,7 @@
   (let [lines (split-lines text)
         sections (build-section lines "blockquote")]
     (do
-      (println (build-section lines "blockquote"))
+      (println (build-tag "blockquote" (apply str (interpose "\r\n" (build-section lines "blockquote")))))
       lines  
       )
     ))
