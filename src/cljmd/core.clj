@@ -1,21 +1,48 @@
 (ns cljmd.core
+  (:require [clojure.contrib.jmx :as jmx])
   (:use clojure.string))
 
 ; (split-lines test-text)
 ;(def text-to-test (into () (split-lines test-text)))
 
-(def sectional-opts "foo")
-
-(defn section
-  [text]
-  (let [lines (str (split-lines text))
-        sections (map (fn [line] (re-matches #"^>" line)) lines)]
-    lines))
+(def sectional-opts 
+  { :blockquote #"^[\ ]*>\ " })
 
 (defn build-tag
   [tag content]
   (if (not-empty content) 
     (str "<" tag ">" content "</" tag ">")))
+
+(defn build-section
+  [lines tag]
+  (let [tag-str tag
+        tag-key (jmx/maybe-keywordize tag-str)]
+    (if (re-matcher (sectional-opts tag-key) (first lines))
+        (if (not-empty (rest lines)) (conj (build-section (rest lines) tag-str) (first lines)))   
+      ))
+  ;(build-tag tag (first lines) (recur rest lines))
+  )
+
+(defn section 
+  [lines]
+  ;(map (fn [line] (re-matches #"^>" line)) lines)
+  (do
+    (println "Start Line:")
+    (println (first lines))
+    (println (re-matches #"^>" (first lines)))
+    ;(println (first lines))
+    (println "End Line\r\n")
+    (if (not-empty (rest lines)) (recur (rest lines)))))
+
+(defn build-markup
+  [text]
+  (let [lines (split-lines text)
+        sections (build-section lines "blockquote")]
+    (do
+      (println (build-section lines "blockquote"))
+      lines  
+      )
+    ))
 
 (defn line-to-markup
   [line]
