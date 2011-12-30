@@ -7,7 +7,7 @@
 ###bazw#ibble\r\n# wobble
 #######flub")
 
-(def test-section "> foo\r\n> bar\r\n> baz\r\nwibble")
+(def test-section "> foo\r\n> bar\r\n> baz\r\nwibble\r\n1. hola!\r\n 2.Hello!\r\n 3. rgr")
 
 (defn -main
   []

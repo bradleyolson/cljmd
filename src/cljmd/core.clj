@@ -3,7 +3,9 @@
   (:use clojure.string))
 
 (def sectional-opts 
-  { :blockquote #"^[\ ]*>\ " })
+  { :blockquote #"^[\ ]{0,1}\>"
+    :ol #"^[\ ]{0,1}[0-9]*\." 
+  })
 
 (defn build-tag
   [tag content]
@@ -18,8 +20,27 @@
   [lines tag]
   (let [tag-str tag
         tag-key (jmx/maybe-keywordize tag-str)]
-    (if (re-matcher (sectional-opts tag-key) (first lines))
-        (if (not-empty (rest lines)) (conj (build-section (rest lines) tag-str) (remove-md (first lines) (sectional-opts tag-key)))))))
+    (if (not-empty (and (rest lines) (re-find (sectional-opts tag-key) (first lines))))
+        (conj (build-section (rest lines) tag-str) (remove-md (first lines) (sectional-opts tag-key))))))
+
+(defn test-opt
+  [line opt]
+  ())
+
+(defn test-blocks
+  [line tag-opts]
+  (doseq [opt tag-opts]
+    (if (not-empty (re-find (val opt) line)) (println "line: " line " - found " (key opt))))
+  ;(let [foo (apply (fn [& opt] (toUpperCase (vals opt))) tag-opts)])
+  ;(apply (fn [f b] (println f) (println b)) sectional-opts)
+  ;(apply (fn [regex] (if (not-empty (re-find regex)) (println "foo"))) (vals opts))
+  ;(apply (fn [tag reg] (if (not-empty (re-find (reg line))) (println "foo"))) sectional-opts)
+  )
+
+(defn sectionalize
+  [lines]
+  (test-blocks (first lines) sectional-opts)
+  (if (not-empty (rest lines)) (recur (rest lines))))
 
 (defn list-to-text
   [text]
@@ -29,6 +50,10 @@
   [text]
   (let [lines (split-lines text)
         sections (build-section lines "blockquote")]
+    (sectionalize lines)
+    (println "run-1")
+    (println (build-tag "ol" (list-to-text (build-section lines "ol"))))
+    (println "run-2")
     (build-tag "blockquote" (list-to-text (build-section lines "blockquote")))))
 
 ;(defn line-to-markup
