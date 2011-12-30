@@ -29,8 +29,8 @@
 
 (defn test-blocks
   [line tag-opts]
-  (doseq [opt tag-opts]
-    (if (not-empty (re-find (val opt) line)) (println "line: " line " - found " (key opt))))
+  (for [opt tag-opts]
+    (if (not-empty (re-find (val opt) line)) (key opt)))
   ;(let [foo (apply (fn [& opt] (toUpperCase (vals opt))) tag-opts)])
   ;(apply (fn [f b] (println f) (println b)) sectional-opts)
   ;(apply (fn [regex] (if (not-empty (re-find regex)) (println "foo"))) (vals opts))
@@ -39,8 +39,10 @@
 
 (defn sectionalize
   [lines]
-  (test-blocks (first lines) sectional-opts)
-  (if (not-empty (rest lines)) (recur (rest lines))))
+  (let [tag (first (keep identity (test-blocks (first lines) sectional-opts)))]
+    (if (keyword? tag)
+      (println (build-section lines tag)))
+    (if (not-empty (rest lines)) (recur (rest lines))) ))
 
 (defn list-to-text
   [text]
@@ -50,11 +52,12 @@
   [text]
   (let [lines (split-lines text)
         sections (build-section lines "blockquote")]
-    (sectionalize lines)
     (println "run-1")
-    (println (build-tag "ol" (list-to-text (build-section lines "ol"))))
-    (println "run-2")
-    (build-tag "blockquote" (list-to-text (build-section lines "blockquote")))))
+    (sectionalize lines)
+    ;(println (build-tag "ol" (list-to-text (build-section lines "ol"))))
+    (println "endrun")
+    ;(build-tag "blockquote" (list-to-text (build-section lines "blockquote")))
+    ))
 
 ;(defn line-to-markup
 ; [line]
