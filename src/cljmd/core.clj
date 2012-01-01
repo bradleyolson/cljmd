@@ -24,7 +24,7 @@
   (print line ": " prev)
   (let [reg (opts tag)]
     (if (and (not (nil? prev)) (not-empty (re-find reg prev)))
-      (println "---")))
+      ))
   ;(if (not (and (nil? prev) (re-find (opts tag) prev))))
   (str "built block! " line " for " tag))
 
@@ -34,9 +34,9 @@
         prev-line (first prev)
         next-line (first (rest lines)) 
         curr-line (first lines)
-        line (if (not (nil? block-type))
+        line (if-not (nil? block-type))
                (build-block curr-line prev-line next-line block-type block-opts)
-               (first lines))]
+               (first lines)]
       (cons line (if (not-empty (rest lines)) (check-sections (rest lines) curr-line)))))
 
 (defn sectionalize
