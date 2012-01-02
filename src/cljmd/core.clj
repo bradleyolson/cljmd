@@ -26,9 +26,7 @@
         content (map (fn [line] 
                    (clojure.string/replace line (tag opts) replace-with)) 
                  lines)]
-    (println (map (fn [line] 
-                   (clojure.string/replace-re (tag opts) replace-with line))
-                 lines))
+    (println lines)
       content))
 
 (defn sectionalize
