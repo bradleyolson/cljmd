@@ -30,6 +30,7 @@
        (split-lines section)))) 
 
 (defn sectionalize
+  "builds base paragraphs from [text]. returns list."
   [^String text]
   (seq (.split #"\r?\n\r?\n" text)))
 
