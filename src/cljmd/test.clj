@@ -3,7 +3,15 @@
   (:require [cljmd.old :as old]))
 
 (def test-text
-"> foo
+"> > foo
+
+> bar
+> baz
+
+1. foo
+2. bar
+3. baz
+4. 5
 
 #bar
 ###bazw#ibble\r\n# wobble
