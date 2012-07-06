@@ -1,6 +1,5 @@
 (ns cljmd.test
-  (:require [cljmd.core :as core]) 
-  (:require [cljmd.old :as old]))
+  (:require [cljmd.core :as core]))
 
 (def test-text
 "> > foo
@@ -16,14 +15,13 @@
 #bar
 ###bazw#ibble\r\n# wobble
 
-#######flub")
+#######flub
+
+[msn]:    http://search.msn.com/
+[google]: http://google.com/ \"The Google\"
+[yahoo]:  http://yahoo.com")
 
 (def test-section "> foo\r\n\r\n> bar\r\n> baz\r\ntest2\r\n 1. #lol!\r\n2. k")
 (def test-section-1 "> foo\r\n> bar\r\n> baz\r\nwibble\r\n1. hola!\r\n 2.Hello!\r\n 3. rgr")
 
-(defn -main
-  []
-  (do
-    ;(println (old/build-markup test-section))
-    (println (core/build-markup test-text))
-    ))
+(println (core/build test-text))
