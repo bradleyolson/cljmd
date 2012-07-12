@@ -6,8 +6,8 @@
 (def sectionals
   (hash-map 
     :blockquote #"^\s?[\>].*"
-    :ol #"^\s*[0-9]*\.+.*"
-    :ul #"^\s*[\*\+\-].*"
+    :ol #"^\s*[0-9]*\.+.*([\r\n]\s*[0-9]*\.+.*)?"
+    :ul #"^\s*[\*\+\-].*([\r\n]\s*[\*\+\-].*)?"
     :p #"^[\r\n\r\n]"
   ))
 
@@ -75,7 +75,7 @@
            (apply new-link (rest (re-find link-regex legend-key))))
       (filter (fn [line] (re-find link-regex line)) lines))))
 
-(defn collapse
+(defn collapse-to-markup
   [total & sections]
   (if (empty? sections) total
     (if (string? (val (first sections)))
@@ -89,7 +89,7 @@
         ]
     (println legend)
     (println sections)
-    (println (apply collapse "" sections))
+    (println (apply collapse-to-markup "" sections))
   ))
 
 (def test-text
@@ -126,7 +126,7 @@ test"}
 (def test-section-1 "> foo\r\n> bar\r\n> baz\r\nwibble\r\n1. hola!\r\n 2.Hello!\r\n 3. rgr")
 
 (println (build-markup test-text))
-;(println (apply collapse "" test-map))
+;(println (apply collapse-to-markup "" test-map))
 
 
 ; Sectionalize - run through each \r\n\r\n and either make it a p tag or make it another type section.
