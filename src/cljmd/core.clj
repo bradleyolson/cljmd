@@ -53,19 +53,8 @@
 (defn collapse
   [total & sections]
   (if (empty? sections) total
-    (let [focus (first sections)]
-      (if (string? (val focus))
-        (recur (str total (tag (val focus) (name (key focus)))) (rest sections)))
-      ))
-; (reduce (fn [complete [tag-type text]]
-;           (if (string? text)
-;             (str complete (tag text tag-type))
-;             complete
-;             )
-;           )
-;   sections)
-  
-  )
+    (if (string? (val (first sections)))
+      (recur (str total (tag (val (first sections)) (name (key (first sections))))) (rest sections)))))
  
 (defn build-markup
   [text]
