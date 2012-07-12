@@ -6,9 +6,9 @@
 (def sectionals
   (hash-map 
     :blockquote #"^\s?[\>].*(\r*\s?[\>].*)*"
-    :ol #"^\s*[0-9]*\.+.*([\r\n]\s*[0-9]*\.+.*)*"
-    :ul #"^\s*[\*\+\-].*([\r\n]\s*[\*\+\-].*)*"
-    :p #"^[\r\n\r\n]"
+;    :ol #"^\s*[0-9]*\.+.*([\r\n]\s*[0-9]*\.+.*)*"
+;    :ul #"^\s*[\*\+\-].*([\r\n]\s*[\*\+\-].*)*"
+;    :p #"^[\r\n\r\n]"
   ))
 
 (def removals
@@ -43,14 +43,21 @@
                (test-regex block opt)
              ) section-opts))))
 
-(defn find-block
-  [text & regex])
+(defn find-blocks
+  [text & regex]
+  (if (empty? regex) text
+    (if (re-find (val (first regex)) text)
+      (re-find (val (first regex)) text)
+      "bar"
+      )))
 
 (defn sectionalize
   [^String text]
-  (into {} (map (fn [line]
-        (section-test line sectionals)
-      ) (clojure.string/split-lines text))))
+  (apply find-blocks text sectionals)
+; (into {} (map (fn [line]
+;       (section-test line sectionals)
+;     ) (clojure.string/split-lines text)))
+  )
 
 ; markup specific
 
