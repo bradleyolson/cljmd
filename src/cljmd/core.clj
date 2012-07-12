@@ -1,12 +1,19 @@
 (ns cljmd.core
   (:require [clojure.contrib.string :as string]))
 
+; declarations
+
 (def sectionals
   (hash-map 
     :blockquote #"^\s?[\>].*"
-    :ol #"^\s*[0-9]*\.+.*" 
+    :ol #"^\s*[0-9]*\.+.*"
     :ul #"^\s*[\*\+\-].*"
-    :p #"^[\r\n\r\n|\t] "
+    :p #"^[\r\n\r\n]"
+  ))
+
+(def removals
+  (hash-map
+    
   ))
 
 (defn new-link
@@ -17,9 +24,49 @@
     :alt (first alt)
   ))
 
+; sectionalize
+
+(defn re-move
+  [pattern text]
+  (clojure.string/replace-first text pattern ""))
+
+(defn test-regex
+  [text pair]
+  (println (val pair) text)
+  (if (re-find (val pair) text)
+    (hash-map (key pair) text)))
+
+(defn section-test
+  [block section-opts]
+  (into {} (filter #(not (nil? %))
+             (map (fn [opt]
+               (test-regex block opt)
+             ) section-opts))))
+
+(defn find-block
+  [text & regex])
+
+(defn sectionalize
+  [^String text]
+  (into {} (map (fn [line]
+        (section-test line sectionals)
+      ) (clojure.string/split-lines text))))
+
+; markup specific
+
+(defn attr
+  [pair]
+  (str (name (key pair)) "=\"" (val pair) "\""))
+
+(defn attrs
+  ([opts] (apply attrs "" opts))
+  ([total & opts]
+    (if (empty? opts) total
+      (recur (str total " " (apply attr (first opts))) (rest opts)))))
+
 (defn tag
   [content tag & opts]
-  (str "<" tag ">" content "</" tag ">"))
+  (str "<" tag (if opts (attrs opts)) ">" content "</" tag ">"))
 
 (defn link-legend
   [^String lines]
@@ -28,33 +75,12 @@
            (apply new-link (rest (re-find link-regex legend-key))))
       (filter (fn [line] (re-find link-regex line)) lines))))
 
-(defn re-move
-  [pattern text]
-  (clojure.string/replace-first text pattern ""))
-
-(defn test-regex
-  [text pair]
-  (if (re-find (val pair) text)
-    {(key pair) (re-move (val pair) text)}))
-
-(defn section-test
-  [block section-opts]
-  (into {} (filter #(not (nil? %))
-      (doall (map (fn [opt]
-                    (test-regex block opt)
-              ) section-opts)))))
-
-(defn sectionalize
-  [^String text]
-  (into {} (map (fn [line]
-        (section-test line sectionals)
-      ) (seq (string/split #"\r?\n\r?\n" text)))))
-
 (defn collapse
   [total & sections]
   (if (empty? sections) total
     (if (string? (val (first sections)))
-      (recur (str total (tag (val (first sections)) (name (key (first sections))))) (rest sections)))))
+      (recur (str total (tag (val (first sections)) (name (key (first sections)))))
+             (rest sections)))))
  
 (defn build-markup
   [text]
@@ -76,10 +102,14 @@
 > ba
 > baz
 
+  teststststsst
+
 #bar
 ###bazw#ibble\r\n# wobble
 
 #######flub
+
+  foo
 
 [msn]:    http://search.msn.com/
 [google]: http://google.com/ \"The Google\"
