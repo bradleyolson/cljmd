@@ -6,9 +6,9 @@
 (def sectionals
   (hash-map 
     :blockquote #"^\s?[\>].*(\r*\s?[\>].*)*"
-;    :ol #"^\s*[0-9]*\.+.*([\r\n]\s*[0-9]*\.+.*)*"
-;    :ul #"^\s*[\*\+\-].*([\r\n]\s*[\*\+\-].*)*"
-;    :p #"^[\r\n\r\n]"
+    :ol #"^\s*[0-9]*\.+.*([\r\n]\s*[0-9]*\.+.*)*"
+    :ul #"^\s*[\*\+\-].*([\r\n]\s*[\*\+\-].*)*"
+    :p #"^.*(\S)"
   ))
 
 (def removals
@@ -32,9 +32,8 @@
 
 (defn test-regex
   [text pair]
-  (println (val pair) text)
   (if (re-find (val pair) text)
-    (hash-map (key pair) text)))
+    {(key pair) text}))
 
 (defn section-test
   [block section-opts]
@@ -43,21 +42,42 @@
                (test-regex block opt)
              ) section-opts))))
 
+(defn merge-sequential-keys
+  [collection & pairs]
+  (cond
+    (empty? pairs) collection
+    (and (not-empty collection) 
+         (= (key (last collection)) (key (first pairs)))) 'foo
+    :else (recur (conj collection (first pairs)) (rest pairs))
+    ))
+
+(comment 
 (defn find-blocks
   [text & regex]
   (if (empty? regex) text
     (if (re-find (val (first regex)) text)
-      (re-find (val (first regex)) text)
-      "bar"
-      )))
+      (test-regex text (first regex))
+      (recur text (rest regex))
+    )))
+)
+
+(defn find-blocks
+  [text & regex]
+  (cond
+    (empty? regex) nil
+    (re-find (val (first regex)) text) (test-regex text (first regex))
+    :else (recur text (rest regex))))
+
+(defn filter-regex
+  [text]  
+  (filter (fn [x] (not (nil? x))) 
+          (map (fn [x]
+            (first (apply find-blocks x sectionals))
+          ) (clojure.string/split-lines text))))
 
 (defn sectionalize
   [^String text]
-  (apply find-blocks text sectionals)
-; (into {} (map (fn [line]
-;       (section-test line sectionals)
-;     ) (clojure.string/split-lines text)))
-  )
+  (apply merge-sequential-keys '() (filter-regex text)))
 
 ; markup specific
 
@@ -92,19 +112,18 @@
 (defn build-markup
   [text]
   (let [legend (link-legend (string/split-lines text))
-        sections (sectionalize text)
-        ]
+        sections (sectionalize text)]
     (println legend)
     (println sections)
-    (println (apply collapse-to-markup "" sections))
+    ;(println (apply collapse-to-markup "" sections))
   ))
 
 (def test-text
 "> > foo
 
-2. bar
-3. baz
-4. 5
+1. bar
+2. baz
+3. 5
 
 > ba
 > baz
@@ -132,8 +151,8 @@ test"}
 (def test-section "> foo\r\n\r\n> bar\r\n> baz\r\ntest2\r\n 1. #lol!\r\n2. k")
 (def test-section-1 "> foo\r\n> bar\r\n> baz\r\nwibble\r\n1. hola!\r\n 2.Hello!\r\n 3. rgr")
 
-(println (build-markup test-text))
 ;(println (apply collapse-to-markup "" test-map))
+(println (build-markup test-text))
 
 
 ; Sectionalize - run through each \r\n\r\n and either make it a p tag or make it another type section.
